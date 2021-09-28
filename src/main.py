@@ -1,0 +1,2 @@
+from datasources.ScotiabankScrapper import ScotiabankScrapper
+
