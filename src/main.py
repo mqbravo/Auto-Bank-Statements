@@ -1,2 +1,4 @@
-from datasources.ScotiabankScrapper import ScotiabankScrapper
+from datasources.ScotiabankWebCrawler import ScotiabankWebCrawler
 
+sw = ScotiabankWebCrawler()
+sw.crawl()
