@@ -23,7 +23,15 @@ class ScotiabankScrapper(Datasource):
 
         statement = statement[:-2]
 
+        statement = statement[~statement["Date"].isna()]
+        remove_comma_and_to_num(statement, ["Debit", "Credit", "Balance"])
+
         return statement
 
     def upload(self) -> None:
         return super().upload()
+
+
+def remove_comma_and_to_num(df, columns):
+    df[columns] = df[columns].apply(lambda df: df.str.replace(",", ""))
+    df[columns] = df[columns].apply(pd.to_numeric)
