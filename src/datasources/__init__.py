@@ -1,0 +1,3 @@
+from datasources.Datasource import Datasource
+from datasources.ScotiabankScrapper import ScotiabankScrapper
+from datasources.ScotiabankWebCrawler import ScotiabankWebCrawler
