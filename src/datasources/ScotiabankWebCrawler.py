@@ -9,13 +9,16 @@ from selenium.webdriver.support.ui import Select
 from time import sleep
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
+from config.config_reader import read_yaml
 
 
 class ScotiabankWebCrawler(Datasource):
     def __init__(self) -> None:
         self.login_url = "https://scotiaenlinea.scotiabank.fi.cr/IB/Account/LogOn"
-        self.username = ""
-        self.password = ""
+
+        credentials = read_yaml("../config/credentials.yaml")["scotiabank"]
+        self.username = credentials["username"]
+        self.password = credentials["password"]
 
         self.output_path = ""
 

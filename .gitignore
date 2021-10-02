@@ -177,3 +177,5 @@ pip-selfcheck.json
 **/share/jupyter/kernels/python3/logo-32x32.png
 **/share/jupyter/kernels/python3/logo-64x64.png
 **/share/man/man1/ipython.1.gz
+src/config/credentials.yaml
+src/config/datasources.yaml
