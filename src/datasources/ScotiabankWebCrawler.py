@@ -5,14 +5,32 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from datasources.Datasource import Datasource
+from selenium.webdriver.support.ui import Select
+from time import sleep
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 
 
 class ScotiabankWebCrawler(Datasource):
     def __init__(self) -> None:
-        self.driver = Firefox()
         self.login_url = "https://scotiaenlinea.scotiabank.fi.cr/IB/Account/LogOn"
         self.username = ""
         self.password = ""
+
+        self.output_path = ""
+
+        profile = FirefoxProfile()
+        profile.set_preference("browser.download.panel.shown", False)
+        profile.set_preference(
+            "browser.helperApps.neverAsk.openFile", "text/csv,application/vnd.ms-excel"
+        )
+        profile.set_preference(
+            "browser.helperApps.neverAsk.saveToDisk",
+            "text/csv,application/vnd.ms-excel",
+        )
+        profile.set_preference("browser.download.folderList", 2)
+
+        self.driver = Firefox(firefox_profile=profile)
 
     def crawl(self):
         try:
@@ -30,42 +48,46 @@ class ScotiabankWebCrawler(Datasource):
                 "/html/body/div[11]/div[2]/div[2]/ul/li[1]/ul/li[3]/a"
             ).click()
 
-            attempts = 0
-            while attempts < 10:
-                try:
-                    attempts += 1
-                    self.wait_clickable_xpath(
-                        '//*[@id="CuentaOrigenIdLista_chosen"]'
-                    ).click()
-                    break
-                except:
-                    if attempts == 10:
-                        raise Exception("Too many attempts!")
+            self.attempt_clicks('//*[@id="CuentaOrigenIdLista_chosen"]')
 
             self.wait_clickable_xpath(
                 "/html/body/div[11]/div[2]/div[2]/div[1]/form/fieldset/div/table[2]/tbody/tr[1]/td[2]/div/div/ul/li[4]"
             ).click()
 
-        except FileNotFoundError as e:
+            sleep(3)
+
+            select = Select(self.wait_clickable_xpath('//*[@id="TipoConsultaId"]'))
+            select.select_by_value("AM")
+
+            self.wait_clickable_xpath(
+                "/html/body/div[11]/div[2]/div[2]/div[1]/div/div/table[2]/tbody/tr/td[1]/div/p/a"
+            ).click()
+
+            # Wait for download
+            sleep(6)
+
+        except Exception as e:
             print(e)
-            pass
 
-        # finally:
-        #     try:
-        #         self.wait_clickable_xpath('//*[@id="exit"]').click()
-        #     except:
-        #         pass
+        finally:
+            try:
+                logout_button = self.wait_clickable_xpath(
+                    "/html/body/div[11]/div[1]/div[1]"
+                )
 
-        #     self.driver.close()
+                self.driver.execute_script("arguments[0].click();", logout_button)
+
+                sleep(3)
+            except Exception as e:
+                print(e)
+                pass
+
+            self.driver.quit()
 
     def login(self):
-        self.driver.find_element_by_xpath('//*[@id="UserName"]').send_keys(
-            self.username
-        )
-        self.driver.find_element_by_xpath('//*[@id="_Password"]').send_keys(
-            self.password
-        )
-        self.driver.find_element_by_xpath('//*[@id="btnIngresar"]').click()
+        self.wait_presence_xpath('//*[@id="UserName"]').send_keys(self.username)
+        self.wait_presence_xpath('//*[@id="_Password"]').send_keys(self.password)
+        self.wait_presence_xpath('//*[@id="btnIngresar"]').click()
 
     def extract(self) -> DataFrame:
         return super().extract()
@@ -79,3 +101,14 @@ class ScotiabankWebCrawler(Datasource):
         return WebDriverWait(self.driver, timeout=timeout).until(
             EC.element_to_be_clickable((By.XPATH, xpath))
         )
+
+    def attempt_clicks(self, xpath, max_attempts=10):
+        attempts = 0
+        while attempts < max_attempts:
+            try:
+                attempts += 1
+                self.wait_clickable_xpath(xpath).click()
+                break
+            except:
+                if attempts == max_attempts:
+                    raise Exception("Too many attempts!")
