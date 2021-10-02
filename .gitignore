@@ -173,9 +173,30 @@ pyvenv.cfg
 pip-selfcheck.json
 
 # End of https://www.toptal.com/developers/gitignore/api/python,venv,apachehadoop-
+
+# IPy kernel
 **/share/jupyter/kernels/python3/kernel.json
 **/share/jupyter/kernels/python3/logo-32x32.png
 **/share/jupyter/kernels/python3/logo-64x64.png
 **/share/man/man1/ipython.1.gz
+
+# Config files
 src/config/credentials.yaml
 src/config/datasources.yaml
+
+# Ignore all temporary files
+resources/temp/
+
+# Ignore VS Code config
+
+### VisualStudioCode ###
+.vscode/*
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide

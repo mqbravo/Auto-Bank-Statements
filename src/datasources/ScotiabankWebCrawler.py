@@ -10,19 +10,25 @@ from time import sleep
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from config.config_reader import read_yaml
+from os.path import abspath
 
 
 class ScotiabankWebCrawler(Datasource):
     def __init__(self) -> None:
         self.login_url = "https://scotiaenlinea.scotiabank.fi.cr/IB/Account/LogOn"
 
-        credentials = read_yaml("../config/credentials.yaml")["scotiabank"]
-        self.username = credentials["username"]
-        self.password = credentials["password"]
+        credentials_conf = read_yaml("credentials")["scotiabank"]
+        datasources_conf = read_yaml("datasources")["scotiabank"]
 
-        self.output_path = ""
+        self.username = credentials_conf["username"]
+        self.password = credentials_conf["password"]
+
+        self.output_path = abspath(datasources_conf["dir"])
 
         profile = FirefoxProfile()
+        profile.set_preference("browser.download.folderList", 2)
+        profile.set_preference("browser.download.manager.showWhenStarting", False)
+        profile.set_preference("browser.download.dir", self.output_path)
         profile.set_preference("browser.download.panel.shown", False)
         profile.set_preference(
             "browser.helperApps.neverAsk.openFile", "text/csv,application/vnd.ms-excel"
@@ -33,7 +39,7 @@ class ScotiabankWebCrawler(Datasource):
         )
         profile.set_preference("browser.download.folderList", 2)
 
-        self.driver = Firefox(firefox_profile=profile)
+        # self.driver = Firefox(firefox_profile=profile)
 
     def crawl(self):
         try:
