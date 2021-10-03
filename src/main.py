@@ -5,4 +5,5 @@ from os import chdir
 chdir("..")
 
 sw = ScotiabankWebCrawler()
-sw.crawl()
+df = sw.extract()
+print(df)

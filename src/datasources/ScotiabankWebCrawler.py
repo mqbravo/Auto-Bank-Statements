@@ -11,6 +11,9 @@ from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.firefox.firefox_profile import FirefoxProfile
 from config.config_reader import read_yaml
 from os.path import abspath
+import pandas as pd
+from os import remove
+from selenium.webdriver.firefox.options import Options
 
 
 class ScotiabankWebCrawler(Datasource):
@@ -24,6 +27,9 @@ class ScotiabankWebCrawler(Datasource):
         self.password = credentials_conf["password"]
 
         self.output_path = abspath(datasources_conf["dir"])
+
+        options = Options()
+        options.headless = True
 
         profile = FirefoxProfile()
         profile.set_preference("browser.download.folderList", 2)
@@ -39,7 +45,7 @@ class ScotiabankWebCrawler(Datasource):
         )
         profile.set_preference("browser.download.folderList", 2)
 
-        # self.driver = Firefox(firefox_profile=profile)
+        self.driver = Firefox(firefox_profile=profile, options=options)
 
     def crawl(self):
         try:
@@ -99,7 +105,22 @@ class ScotiabankWebCrawler(Datasource):
         self.wait_presence_xpath('//*[@id="btnIngresar"]').click()
 
     def extract(self) -> DataFrame:
-        return super().extract()
+        # Generate the file
+        self.crawl()
+
+        filename = f"{self.output_path}/EstadoCuenta.xls"
+        df = pd.read_excel(
+            filename,
+            skiprows=18,
+            skipfooter=7,
+            header=None,
+            names=["Date", "Ag.Movm", "Concept", "Debit", "Credit", "Balance"],
+        )
+
+        # Always remove the file
+        remove(filename)
+
+        return df
 
     def wait_presence_xpath(self, xpath, timeout=30):
         return WebDriverWait(self.driver, timeout=timeout).until(
