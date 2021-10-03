@@ -104,7 +104,7 @@ class ScotiabankWebCrawler(Datasource):
             )
 
         except Exception as e:
-            logger.exception(str(e))
+            logger.exception("Error retrieving the bank statement!")
 
         finally:
             try:
@@ -119,7 +119,7 @@ class ScotiabankWebCrawler(Datasource):
 
                 logger.info("Logged out successfully!")
             except Exception as e:
-                logger.exception(str(e))
+                logger.exception("An error occurred when logging out!")
 
             self.driver.quit()
             logger.info("Web driver closed successfully.")
