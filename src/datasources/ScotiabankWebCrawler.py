@@ -14,12 +14,16 @@ from os.path import abspath
 import pandas as pd
 from os import remove
 from selenium.webdriver.firefox.options import Options
+from log.logger import logger
 
 
 class ScotiabankWebCrawler(Datasource):
     def __init__(self) -> None:
         self.login_url = "https://scotiaenlinea.scotiabank.fi.cr/IB/Account/LogOn"
 
+        logger.info("Setting up web environment...")
+
+        # Read login credentials
         credentials_conf = read_yaml("credentials")["scotiabank"]
         datasources_conf = read_yaml("datasources")["scotiabank"]
 
@@ -28,24 +32,34 @@ class ScotiabankWebCrawler(Datasource):
 
         self.output_path = abspath(datasources_conf["dir"])
 
+        # Set options and profile preferences
         options = Options()
-        options.headless = True
+        options.headless = True  # Don't open the browser GUI
 
         profile = FirefoxProfile()
-        profile.set_preference("browser.download.folderList", 2)
-        profile.set_preference("browser.download.manager.showWhenStarting", False)
-        profile.set_preference("browser.download.dir", self.output_path)
-        profile.set_preference("browser.download.panel.shown", False)
+        profile.set_preference(
+            "browser.download.folderList", 2
+        )  # Override default download dir
+        profile.set_preference(
+            "browser.download.manager.showWhenStarting", False
+        )  # Don't show download window
+        profile.set_preference(
+            "browser.download.panel.shown", False
+        )  # Don't show download window
+        profile.set_preference(
+            "browser.download.dir", self.output_path
+        )  # Set download directory
         profile.set_preference(
             "browser.helperApps.neverAsk.openFile", "text/csv,application/vnd.ms-excel"
-        )
+        )  # Download csv and Excel without asking
         profile.set_preference(
             "browser.helperApps.neverAsk.saveToDisk",
             "text/csv,application/vnd.ms-excel",
         )
-        profile.set_preference("browser.download.folderList", 2)
 
         self.driver = Firefox(firefox_profile=profile, options=options)
+
+        logger.info("Environment created successfully")
 
     def crawl(self):
         try:
@@ -53,6 +67,8 @@ class ScotiabankWebCrawler(Datasource):
             self.driver.get(self.login_url)
 
             self.login()
+
+            logger.info("Finding last month statement...")
 
             consultas_href = self.wait_presence_xpath(
                 "/html/body/div[11]/div[2]/div[2]/ul/li[1]/a"
@@ -74,6 +90,8 @@ class ScotiabankWebCrawler(Datasource):
             select = Select(self.wait_clickable_xpath('//*[@id="TipoConsultaId"]'))
             select.select_by_value("AM")
 
+            logger.info("Statement located! Downloading...")
+
             self.wait_clickable_xpath(
                 "/html/body/div[11]/div[2]/div[2]/div[1]/div/div/table[2]/tbody/tr/td[1]/div/p/a"
             ).click()
@@ -81,8 +99,12 @@ class ScotiabankWebCrawler(Datasource):
             # Wait for download
             sleep(6)
 
+            logger.info(
+                f"The statement was downloaded successfully into {self.output_path}"
+            )
+
         except Exception as e:
-            print(e)
+            logger.exception(str(e))
 
         finally:
             try:
@@ -91,15 +113,20 @@ class ScotiabankWebCrawler(Datasource):
                 )
 
                 self.driver.execute_script("arguments[0].click();", logout_button)
+                logger.info("Logging out...")
 
                 sleep(3)
+
+                logger.info("Logged out successfully!")
             except Exception as e:
-                print(e)
-                pass
+                logger.exception(str(e))
 
             self.driver.quit()
+            logger.info("Web driver closed successfully.")
 
     def login(self):
+        logger.info("Loging in into the account...")
+
         self.wait_presence_xpath('//*[@id="UserName"]').send_keys(self.username)
         self.wait_presence_xpath('//*[@id="_Password"]').send_keys(self.password)
         self.wait_presence_xpath('//*[@id="btnIngresar"]').click()

@@ -1,8 +1,9 @@
-from datasources import ScotiabankWebCrawler
 from os import chdir
 
 # Change WD to projects root
 chdir("..")
+
+from datasources import ScotiabankWebCrawler
 
 sw = ScotiabankWebCrawler()
 df = sw.extract()
