@@ -1,13 +1,12 @@
 from sqlalchemy import create_engine
 from config.config_reader import read_yaml
 from string import Template
+from util.singleton_meta import SingletonMeta
+from log.logger import logger
 
 
-class MySQLConnection:
+class MySQLConnection(metaclass=SingletonMeta):
     def __init__(self) -> None:
-        pass
-
-    def get_engine(self):
         mysql_config = read_yaml("connections")["mysql"]
 
         conn_params = {
@@ -17,10 +16,16 @@ class MySQLConnection:
             "port": mysql_config["port"],
         }
 
+        logger.info(
+            f"Creating MySQL engine with parameters user={conn_params['user']}, host={conn_params['host']}, port={conn_params['port']}..."
+        )
+
         conn_string = Template(mysql_config["conn_string_template"]).substitute(
             **conn_params
         )
 
-        print(conn_string)
-
-        return create_engine(conn_string)
+        try:
+            self.engine = create_engine(conn_string)
+            logger.info("Engine created successfully!")
+        except:
+            logger.exception("Error creating MySQL engine")

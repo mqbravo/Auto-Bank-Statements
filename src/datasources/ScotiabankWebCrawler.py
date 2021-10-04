@@ -177,12 +177,16 @@ class ScotiabankWebCrawler(Datasource):
     def upload(self) -> None:
         conn = None
         try:
-            conn = MySQLConnection().get_engine()
+            conn = MySQLConnection().engine.connect()
+            logger.exception("Connected to database successfully. Uploading data...")
             self.data.to_sql(
-                name="test", schema="bank_statements", con=conn, index=False
+                name="test1", schema="bank_statements", con=conn, index=False
             )
+
+            logger.exception("Data uploaded successfully!")
+
         except:
             logger.exception("Error uploading Scotiabank datasource")
         finally:
-            if conn:
-                conn.dispose()
+            if conn and not conn.closed:
+                conn.close()
