@@ -181,9 +181,10 @@ pip-selfcheck.json
 **/share/man/man1/ipython.1.gz
 
 # Config files
-src/config/credentials.yaml
-src/config/datasources.yaml
-src/config/general.yaml
+config/credentials.yaml
+config/datasources.yaml
+config/general.yaml
+config/connections.yaml
 
 # Ignore all temporary files
 resources/temp/

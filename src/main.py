@@ -8,3 +8,5 @@ from datasources import ScotiabankWebCrawler
 sw = ScotiabankWebCrawler()
 df = sw.extract()
 print(df)
+
+sw.upload()

@@ -15,6 +15,7 @@ import pandas as pd
 from os import remove
 from selenium.webdriver.firefox.options import Options
 from log.logger import logger
+from connections.mysql_conn import MySQLConnection
 
 
 class ScotiabankWebCrawler(Datasource):
@@ -147,6 +148,8 @@ class ScotiabankWebCrawler(Datasource):
         # Always remove the file
         remove(filename)
 
+        self.data = df
+
         return df
 
     def wait_presence_xpath(self, xpath, timeout=30):
@@ -169,3 +172,17 @@ class ScotiabankWebCrawler(Datasource):
             except:
                 if attempts == max_attempts:
                     raise Exception("Too many attempts!")
+
+    # TODO Change this to be generic
+    def upload(self) -> None:
+        conn = None
+        try:
+            conn = MySQLConnection().get_engine()
+            self.data.to_sql(
+                name="test", schema="bank_statements", con=conn, index=False
+            )
+        except:
+            logger.exception("Error uploading Scotiabank datasource")
+        finally:
+            if conn:
+                conn.dispose()
