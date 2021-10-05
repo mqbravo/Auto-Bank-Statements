@@ -18,7 +18,7 @@ This section contains the details of the creation of the development environment
 
 ### MySQL
 
-#### Installation
+#### MySQL Installation
 
 To install MySQL server run the following commands. Do note again that this is for a Debian based distro.
 
@@ -55,7 +55,7 @@ Now that MySQL is installed, you can access the CLI. Use the password you set in
 mysql -u root -p
 ```
 
-You will see the prompt changed to `mysql >`, to exit, run:
+You will see the prompt changed to `mysql>`, to exit, run:
 
 ```bash
 quit
@@ -77,8 +77,51 @@ mysql -u root -p < database/mysql/DB_Creation.sql
 mysql -u root -p < database/mysql/DB_Populate.sql
 ```
 
+## Python
+
+### Python Installation
+
+You can install Python with apt or from source (see useful links section)
+
+Using the easier way (apt) run:
+
+```bash
+sudo apt update
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.9
+```
+
+Verify the installation using
+
+```bash
+python3 --version
+```
+
+### Environment
+
+This project uses PyPi as the package index, create an virtual environment anywhere using:
+
+```bash
+python3 -m venv <virtual_env_name>
+```
+
+Access the environment using:
+
+```bash
+source <virtual_env_name>/bin/activate
+```
+
+Finally, from the project's root, install the packages:
+
+```bash
+pip3 install -r requirements.txt
+```
+
 ## Useful links
 
 - [MySQL Installation Guide](<https://docs.rackspace.com/support/how-to/install-mysql-server-on-the-ubuntu-operating-system/>)
+- [Python Installation Guide](<https://phoenixnap.com/kb/how-to-install-python-3-ubuntu>)
 - <https://phoenixnap.com/kb/install-hive-on-ubuntu>
 - <https://phoenixnap.com/kb/install-hadoop-ubuntu>
